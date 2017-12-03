@@ -1,3 +1,3 @@
 package main
 
-// var input = 
+var input = 368078
