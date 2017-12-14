@@ -1,3 +1,5 @@
 package main
 
-// var input = 
+var testInput = "flqrgnkx"
+
+var input = "hfdlxzhv"
