@@ -1,3 +1,5 @@
 package main
 
-// var input = 
+var testSteps = 3
+
+var inputSteps = 304
