@@ -1,13 +1,39 @@
 package main
 
-import "strings"
 import "fmt"
 
 func main() {
-	start := makeGrid(startingGrid)
-	expandedRules := expandRules(testInput)
-	result := iterate(start, expandedRules)
-	fmt.Println(result.key())
+
+	expandedTestRules := expandRules(testInput)
+	currentTest := makeGrid(startingGrid)
+	currentTest = iterate(currentTest, expandedTestRules)
+	currentTest = iterate(currentTest, expandedTestRules)
+	fmt.Printf("Test part 1 - result after 2 iterations is:\n%s\n", currentTest)
+	fmt.Printf("Test part 1 - number of pixels on is %d\n", currentTest.numPixelsOn())
+
+	expandedPart1Rules := expandRules(input)
+	currentPart1 := makeGrid(startingGrid)
+	currentPart1 = iterate(currentPart1, expandedPart1Rules)
+	currentPart1 = iterate(currentPart1, expandedPart1Rules)
+	currentPart1 = iterate(currentPart1, expandedPart1Rules)
+	currentPart1 = iterate(currentPart1, expandedPart1Rules)
+	currentPart1 = iterate(currentPart1, expandedPart1Rules)
+	fmt.Printf("Part 1 - result after 5 iterations is:\n%s\n", currentPart1)
+	fmt.Printf("Part 1 - number of pixels on is %d\n", currentPart1.numPixelsOn())
+	currentPart1 = iterate(currentPart1, expandedPart1Rules)
+	currentPart1 = iterate(currentPart1, expandedPart1Rules)
+	currentPart1 = iterate(currentPart1, expandedPart1Rules)
+	currentPart1 = iterate(currentPart1, expandedPart1Rules)
+	currentPart1 = iterate(currentPart1, expandedPart1Rules)
+	currentPart1 = iterate(currentPart1, expandedPart1Rules)
+	currentPart1 = iterate(currentPart1, expandedPart1Rules)
+	currentPart1 = iterate(currentPart1, expandedPart1Rules)
+	currentPart1 = iterate(currentPart1, expandedPart1Rules)
+	currentPart1 = iterate(currentPart1, expandedPart1Rules)
+	currentPart1 = iterate(currentPart1, expandedPart1Rules)
+	currentPart1 = iterate(currentPart1, expandedPart1Rules)
+	currentPart1 = iterate(currentPart1, expandedPart1Rules)
+	fmt.Printf("Part 2 - number of pixels on is %d\n", currentPart1.numPixelsOn())
 }
 
 func iterate(pg pixelGrid, rules map[string]string) pixelGrid {
@@ -19,9 +45,9 @@ func iterate(pg pixelGrid, rules map[string]string) pixelGrid {
 	}
 	numSubGrids := len(pg) / subGridLength
 	allSubgrids := []pixelGrid{}
-	for i := 0; i < numSubGrids; i++ {
-		for j := 0; j < numSubGrids; j++ {
-			subGrid := pg.getSubGrid(i, j, subGridLength)
+	for y := 0; y < numSubGrids; y++ {
+		for x := 0; x < numSubGrids; x++ {
+			subGrid := pg.getSubGrid(x, y, subGridLength)
 			result, foundMatch := rules[subGrid.key()]
 			if !foundMatch {
 				panic("eek no match for subgrid: " + subGrid.key())
@@ -30,7 +56,7 @@ func iterate(pg pixelGrid, rules map[string]string) pixelGrid {
 			allSubgrids = append(allSubgrids, subGrid)
 		}
 	}
-	return joinGrids(allSubgrids, numSubGrids*subGridLength)
+	return joinGrids(allSubgrids, numSubGrids*(subGridLength+1))
 }
 func expandRules(in map[string]string) map[string]string {
 	out := map[string]string{}
@@ -39,127 +65,6 @@ func expandRules(in map[string]string) map[string]string {
 		gridOptions := grid.makeKeys()
 		for _, s := range gridOptions {
 			out[s] = v
-		}
-	}
-	return out
-}
-
-type pixelGrid [][]bool
-
-func makeGrid(in string) pixelGrid {
-	bits := strings.Split(in, "/")
-	grid := pixelGrid{}
-	for _, b := range bits {
-		grid = append(grid, pixelsToBools(b))
-	}
-	return grid
-}
-func joinGrids(in []pixelGrid, size int) pixelGrid {
-
-	out := pixelGrid{}
-	subSize := len(in[0])
-
-	for y := 0; y < size; y++ {
-		out = append(out, make([]bool, size))
-		for x := 0; x < size; x++ {
-			subGridIndex := (y * subSize) + (x % subSize)
-			subGridX := (x % subSize)
-			subGridY := (y % subSize)
-			fmt.Println(subGridIndex, subGridY, subGridX)
-			out[y][x] = in[subGridIndex][subGridY][subGridX]
-		}
-	}
-
-	return out
-}
-
-func (pg pixelGrid) key() string {
-	pixels := make([]string, len(pg))
-	for i, row := range pg {
-		pixels[i] = boolsToPixels(row)
-	}
-	return strings.Join(pixels, "/")
-}
-
-func (pg pixelGrid) getSubGrid(x, y, length int) pixelGrid {
-	out := pixelGrid{}
-	for yy := y; yy < y+length; yy++ {
-		out = append(out, make([]bool, length))
-		for xx := x; xx < x+length; xx++ {
-			out[yy-y][xx-x] = pg[yy][xx]
-		}
-	}
-	return out
-}
-
-func (pg pixelGrid) makeKeys() []string {
-	one := pg.rotate90()
-	two := one.rotate90()
-	three := two.rotate90()
-
-	flipped := pg.flipHorizontal()
-	flippedOne := flipped.rotate90()
-	flippedTwo := flippedOne.rotate90()
-	flippedThree := flippedTwo.rotate90()
-
-	allKeys := []string{}
-	allKeys = append(allKeys, pg.key())
-	allKeys = append(allKeys, one.key())
-	allKeys = append(allKeys, two.key())
-	allKeys = append(allKeys, three.key())
-	allKeys = append(allKeys, flipped.key())
-	allKeys = append(allKeys, flippedOne.key())
-	allKeys = append(allKeys, flippedTwo.key())
-	allKeys = append(allKeys, flippedThree.key())
-
-	return allKeys
-}
-
-func (pg pixelGrid) rotate90() pixelGrid {
-	out := pixelGrid{}
-	size := len(pg)
-	for y, row := range pg {
-		for x, val := range row {
-			if y == 0 {
-				out = append(out, make([]bool, size))
-			}
-
-			out[x][size-1-y] = val
-		}
-	}
-	return out
-}
-
-func (pg pixelGrid) flipHorizontal() pixelGrid {
-	out := make([][]bool, len(pg))
-	for i := range pg {
-		out[i] = reverseBools(pg[i])
-	}
-	return out
-}
-
-func reverseBools(in []bool) []bool {
-	out := make([]bool, len(in))
-	for i, j := 0, len(in)-1; j >= 0; i, j = i+1, j-1 {
-		out[i] = in[j]
-	}
-	return out
-}
-
-func pixelsToBools(in string) []bool {
-	out := []bool{}
-	for _, r := range in {
-		out = append(out, r == '#')
-	}
-	return out
-}
-func boolsToPixels(in []bool) string {
-	out := ""
-	for _, r := range in {
-		if r {
-			out += "#"
-		} else {
-			out += "."
 		}
 	}
 	return out
