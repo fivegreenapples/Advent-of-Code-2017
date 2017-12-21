@@ -1,3 +1,8 @@
 package main
 
-// var input = 
+var startingGrid = ".#./..#/###"
+
+var testInput = map[string]string{
+	"../.#":       "##./#../...",
+	".#./..#/###": "#..#/..../..../#..#",
+}
