@@ -2,7 +2,8 @@ package main
 
 // This is a Go version of the input assembly code after a few rounds of
 // simpllification and working out what it does.
-// It finds a count of non primes in the between two numbers A and B where the only actual
+//
+// It finds a count of non primes in between two numbers A and B where the only actual
 // values considered are A, A+17, A+17+17, A+17+17+17, etc...
 func doPart2(initialA int) int {
 	a, b, d, f, h := 0, 0, 0, 0, 0
@@ -52,7 +53,7 @@ func doPart2(initialA int) int {
 		if f == 0 {
 			h++
 		}
-
 	}
+
 	return h
 }
