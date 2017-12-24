@@ -27,8 +27,8 @@ func New(rawInstructions []string) *Tablet {
 
 	tab := Tablet{}
 
-	core0 := makeCore(&tab, 0, rawInstructions)
-	core1 := makeCore(&tab, 1, rawInstructions)
+	core0 := MakeCore(&tab, 0, rawInstructions)
+	core1 := MakeCore(&tab, 1, rawInstructions)
 
 	tab.cores = append(tab.cores, core0)
 	tab.cores = append(tab.cores, core1)
@@ -40,8 +40,7 @@ func New(rawInstructions []string) *Tablet {
 // internal registers are zero.
 func (t *Tablet) reset() {
 	t.sendStats = []int{}
-	for i := range t.cores {
-		t.cores[i].reset()
+	for range t.cores {
 		t.sendStats = append(t.sendStats, 0)
 	}
 }
@@ -135,7 +134,7 @@ func (t *Tablet) Run() {
 		wgCores.Add(1)
 		thisRef := i
 		go func() {
-			t.cores[thisRef].run()
+			t.cores[thisRef].Run()
 			wgCores.Done()
 		}()
 	}

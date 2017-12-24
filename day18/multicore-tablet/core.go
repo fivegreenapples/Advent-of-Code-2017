@@ -12,16 +12,18 @@ type singleCore struct {
 	instructions []instruction
 	registers    map[string]int
 	playedSounds []int
+	stats        map[string]int
 }
 
-// Make constructs a Tablet from a set of programming instructions
-func makeCore(parent *Tablet, id int, rawInstructions []string) singleCore {
+// MakeCore constructs a Tablet Core from a set of programming instructions
+func MakeCore(parent *Tablet, id int, rawInstructions []string) singleCore {
 
 	core := singleCore{
 		parent:       parent,
 		coreID:       id,
 		instructions: []instruction{},
 		registers:    map[string]int{},
+		stats:        map[string]int{},
 	}
 
 	instructionRegex := regexp.MustCompile(`^([a-z]+) (([a-z])|([0-9-]+))( (([a-z])|([0-9-]+)))?$`)
@@ -91,30 +93,30 @@ func (c *singleCore) reset() {
 	c.registers["p"] = c.coreID
 }
 
-func (c *singleCore) run() {
+func (c *singleCore) Run() {
+
+	c.reset()
 
 	programCounter := 0
 	for programCounter < len(c.instructions) {
 
 		thisInstruction := c.instructions[programCounter]
 		programCounter++
+		c.stats[thisInstruction.command]++
 
 		switch thisInstruction.command {
 		case "set":
 			c.registers[thisInstruction.operandA.inputRegister] = c.valueOfOperand(thisInstruction.operandB)
 		case "add":
 			c.registers[thisInstruction.operandA.inputRegister] += c.valueOfOperand(thisInstruction.operandB)
+		case "sub":
+			c.registers[thisInstruction.operandA.inputRegister] -= c.valueOfOperand(thisInstruction.operandB)
 		case "mul":
 			c.registers[thisInstruction.operandA.inputRegister] *= c.valueOfOperand(thisInstruction.operandB)
 		case "mod":
 			c.registers[thisInstruction.operandA.inputRegister] = c.valueOfOperand(thisInstruction.operandA) % c.valueOfOperand(thisInstruction.operandB)
 		case "snd":
 			c.parent.send(c.coreID, c.valueOfOperand(thisInstruction.operandA))
-			// sendCount++
-			// if c.coreID == 1 {
-			// 	fmt.Printf("Send from %d with val %d (number of sends: %d)\n", c.coreID, c.valueOfOperand(thisInstruction.operandA), sendCount)
-			// }
-			// c.sendChan <- c.valueOfOperand(thisInstruction.operandA)
 		case "rcv":
 			recvVal, err := c.parent.receive(c.coreID)
 			if err != nil {
@@ -122,6 +124,10 @@ func (c *singleCore) run() {
 				return
 			}
 			c.registers[thisInstruction.operandA.inputRegister] = recvVal
+		case "jnz":
+			if c.valueOfOperand(thisInstruction.operandA) != 0 {
+				programCounter += (c.valueOfOperand(thisInstruction.operandB) - 1)
+			}
 		case "jgz":
 			if c.valueOfOperand(thisInstruction.operandA) > 0 {
 				programCounter += (c.valueOfOperand(thisInstruction.operandB) - 1)
@@ -130,9 +136,10 @@ func (c *singleCore) run() {
 			panic("instruction type not understood: " + thisInstruction.command)
 		}
 
-		// fmt.Println(c.registers, programCounter)
 	}
 
+	// Dump stats if we end here (used in day 23)
+	fmt.Println(c.stats)
 	fmt.Printf("Core %d: execution finished. Reached end of program.\n", c.coreID)
 }
 
@@ -141,4 +148,13 @@ func (c *singleCore) valueOfOperand(op operand) int {
 		return op.inputVal
 	}
 	return c.registers[op.inputRegister]
+}
+
+func (c *singleCore) printRegisters(pc int) {
+	fmt.Printf("%d", pc)
+	for cc := 'a'; cc <= 'h'; cc++ {
+		fmt.Printf("%6d ", c.registers[string(cc)])
+	}
+	fmt.Printf("\n")
+
 }
